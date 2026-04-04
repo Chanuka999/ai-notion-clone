@@ -1,5 +1,6 @@
 import { initializeApp, getApp, getApps, App, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
+import { ServiceAccount } from "firebase-admin/app";
 
 import serviceKey from "./service_key.json";
 
@@ -7,7 +8,7 @@ let app: App;
 
 if (getApps().length === 0) {
   app = initializeApp({
-    credential: cert(serviceKey),
+    credential: cert(serviceKey as ServiceAccount),
   });
 } else {
   app = getApp();

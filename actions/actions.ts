@@ -2,13 +2,19 @@
 
 import { adminDb } from "@/firebase-admin";
 import { auth } from "@clerk/nextjs/server";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function createNewDocument() {
-  // Manual protection
   const { userId, sessionClaims } = await auth();
 
   if (!userId) {
     throw new Error("Unauthorized");
+  }
+
+  const userEmail = sessionClaims?.email as string;
+
+  if (!userEmail) {
+    throw new Error("User email not found in session claims");
   }
 
   const docCollectionRef = adminDb.collection("documents");
@@ -18,14 +24,13 @@ export async function createNewDocument() {
 
   await adminDb
     .collection("users")
-    .doc(sessionClaims?.email!)
+    .doc(userEmail)
     .collection("rooms")
     .doc(docRef.id)
     .set({
-      userId: sessionClaims?.email,
+      userId: userEmail,
       role: "owner",
-      createdAt: new Date(),
-      roomId: docRef.id,
+      createdAt: FieldValue.serverTimestamp(),
     });
 
   return { docId: docRef.id };
