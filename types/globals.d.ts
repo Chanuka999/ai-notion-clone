@@ -1,5 +1,11 @@
-import { User } from "./types";
+export {};
 
 declare global {
-  type CustomJwtSessionClaims = User;
+  namespace Clerk {
+    interface CustomJwtSessionClaims {
+      email?: string;
+      fullName?: string;
+      image?: string;
+    }
+  }
 }
