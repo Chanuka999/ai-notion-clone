@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import NewDocumentButton from "./NewDocumentButton";
 import {
   Sheet,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { MenuIcon } from "lucide-react";
 import { getUserRooms, UserRoom } from "@/actions/actions";
+import SidebarOption from "./SidebarOption";
 
 interface RoomDocument extends UserRoom {
   id: string;
@@ -20,6 +21,7 @@ interface RoomDocument extends UserRoom {
 }
 
 const Sidebar = () => {
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,39 +33,50 @@ const Sidebar = () => {
     editor: [],
   });
 
-  useEffect(() => {
-    const loadRooms = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const loadRooms = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const rooms = await getUserRooms();
-        const ownerDocs: RoomDocument[] = [];
-        const editorDocs: RoomDocument[] = [];
+      const rooms = await getUserRooms();
+      const ownerDocs: RoomDocument[] = [];
+      const editorDocs: RoomDocument[] = [];
 
-        rooms.forEach((room) => {
-          if (room.role === "owner") {
-            ownerDocs.push(room);
-          } else {
-            editorDocs.push(room);
-          }
-        });
+      rooms.forEach((room) => {
+        if (room.role === "owner") {
+          ownerDocs.push(room);
+        } else {
+          editorDocs.push(room);
+        }
+      });
 
-        setGroupedData({ owner: ownerDocs, editor: editorDocs });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Unknown error";
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadRooms();
+      setGroupedData({ owner: ownerDocs, editor: editorDocs });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadRooms();
+  }, [loadRooms]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleDocumentCreated = useCallback(
+    async (_docId: string) => {
+      await loadRooms();
+    },
+    [loadRooms],
+  );
 
   const menuOptions = (
     <>
-      <NewDocumentButton />
+      <NewDocumentButton onCreated={handleDocumentCreated} />
 
       {loading && <p className="text-sm text-gray-500">Loading documents...</p>}
       {error && (
@@ -72,22 +85,43 @@ const Sidebar = () => {
         </p>
       )}
 
-      {/*my documents*/}
-      {!loading && !error && groupedData.owner.length === 0 ? (
-        <h2 className="text-gray-500 font-semibold text-50">
-          No document found
-        </h2>
-      ) : (
+      <div className="flex py-4 flex-col space-y-4 md:max-w-36">
+        {/*my documents*/}
+        {!loading && !error && groupedData.owner.length === 0 ? (
+          <h2 className="text-gray-500 font-semibold text-50">
+            No document found
+          </h2>
+        ) : (
+          <>
+            <h2 className="text-gray-500 font-semibold text-sm">
+              My Documents
+            </h2>
+            {groupedData.owner.map((doc) => (
+              <SidebarOption
+                key={doc.id}
+                href={`/doc/${doc.id}`}
+                title={doc.title}
+              />
+            ))}
+          </>
+        )}
+      </div>
+
+      {/*shared with me */}
+      {groupedData.editor.length > 0 && (
         <>
-          <h2 className="text-gray-500 font-semibold text-sm">My Documents</h2>
-          {groupedData.owner.map((doc) => (
-            <p key={doc.id}>{doc.roomId}</p>
+          <h2 className="text-gray-500 font-semibold text-sm">
+            Shared with me
+          </h2>
+          {groupedData.editor.map((doc) => (
+            <SidebarOption
+              key={doc.id}
+              href={`/doc/${doc.id}`}
+              title={doc.title}
+            />
           ))}
         </>
       )}
-      {/*List */}
-
-      {/*shared with me */}
 
       {/*List */}
     </>
@@ -96,18 +130,28 @@ const Sidebar = () => {
   return (
     <div className="p-2 md:p-5 bg-gray-300 relative">
       <div className="md:hidden">
-        <Sheet>
-          <SheetTrigger>
+        {mounted ? (
+          <Sheet>
+            <SheetTrigger>
+              <MenuIcon className="p-2 hover:opacity-30 rounded-lg" size={40} />
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+                <div>{menuOptions}</div>
+                <div></div>
+              </SheetHeader>
+            </SheetContent>
+          </Sheet>
+        ) : (
+          <button
+            type="button"
+            className="p-2 rounded-lg"
+            aria-label="Open menu"
+          >
             <MenuIcon className="p-2 hover:opacity-30 rounded-lg" size={40} />
-          </SheetTrigger>
-          <SheetContent side="left">
-            <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
-              <div>{menuOptions}</div>
-              <div></div>
-            </SheetHeader>
-          </SheetContent>
-        </Sheet>
+          </button>
+        )}
       </div>
       <div className="hidden md:inline">{menuOptions}</div>
     </div>
