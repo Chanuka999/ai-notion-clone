@@ -49,6 +49,69 @@ export async function createNewDocument() {
   return { docId: docRef.id };
 }
 
+export async function getDocumentTitle(docId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await currentUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+
+  if (!userEmail) {
+    throw new Error("User email not found");
+  }
+
+  const documentSnapshot = await adminDb
+    .collection("documents")
+    .doc(docId)
+    .get();
+
+  if (!documentSnapshot.exists) {
+    throw new Error("Document not found");
+  }
+
+  const data = documentSnapshot.data() as { title?: string };
+
+  return {
+    id: documentSnapshot.id,
+    title: data.title ?? "Untitled",
+  };
+}
+
+export async function updateDocumentTitle(docId: string, title: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await currentUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+
+  if (!userEmail) {
+    throw new Error("User email not found");
+  }
+
+  const nextTitle = title.trim();
+
+  if (!nextTitle) {
+    throw new Error("Title cannot be empty");
+  }
+
+  const documentRef = adminDb.collection("documents").doc(docId);
+  const documentSnapshot = await documentRef.get();
+
+  if (!documentSnapshot.exists) {
+    throw new Error("Document not found");
+  }
+
+  await documentRef.update({ title: nextTitle });
+
+  return { id: docId, title: nextTitle };
+}
+
 export async function getUserRooms(): Promise<UserRoom[]> {
   const { userId } = await auth();
 
