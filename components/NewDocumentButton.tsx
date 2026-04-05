@@ -5,14 +5,21 @@ import { useRouter } from "next/navigation";
 import { createNewDocument } from "@/actions/actions";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 
-const NewDocumentButton = () => {
+const NewDocumentButton = ({
+  onCreated,
+}: {
+  onCreated?: (docId: string) => void | Promise<void>;
+}) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const handleCreateNewDocument = () => {
     startTransition(async () => {
       const { docId } = await createNewDocument();
-      router.push(`doc/${docId}`);
+      if (onCreated) {
+        await onCreated(docId);
+      }
+      router.push(`/doc/${docId}`);
     });
   };
 
