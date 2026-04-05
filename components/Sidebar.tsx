@@ -64,6 +64,18 @@ const Sidebar = () => {
   }, [loadRooms]);
 
   useEffect(() => {
+    const handleDocumentsRefresh = () => {
+      loadRooms();
+    };
+
+    window.addEventListener("documents:refresh", handleDocumentsRefresh);
+
+    return () => {
+      window.removeEventListener("documents:refresh", handleDocumentsRefresh);
+    };
+  }, [loadRooms]);
+
+  useEffect(() => {
     setMounted(true);
   }, []);
 
