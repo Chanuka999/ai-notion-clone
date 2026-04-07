@@ -1,7 +1,5 @@
 import stringToColor from "@/lib/stringToColor";
-import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-
-import React from "react";
+import { motion } from "framer-motion";
 
 const FollowPointer = ({
   x,
@@ -13,43 +11,38 @@ const FollowPointer = ({
 
   info: { name: string; email: string; avatar: string };
 }) => {
-  const color = stringToColor(info.email || "1");
+  const color = stringToColor(info.email || info.name || "1");
+
   return (
     <motion.div
-      className="h-4 w-4 rounded-full absolute z-50"
-      style={{ top: y, left: x, pointerEvents: "none" }}
-      initial={{ scale: 1, opacity: 1 }}
+      className="pointer-events-none fixed z-50"
+      style={{ left: x, top: y }}
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0, opacity: 0 }}
     >
-      <svg
-        stroke={color}
-        fill={color}
-        strokeWidth="1"
-        viewBox="0 0 16 16"
-        className={
-          "h-6 w-6 text-[${color}] transform-rotate-[70deg] -translate-x-[12px] -translate-y-[10px] stroke-[${color}]"
-        }
-        height="1em"
-        width="1em"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-          fill="currentColor"
-        ></path>
+      <div className="relative -translate-x-1 -translate-y-1">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill={color}
+          xmlns="http://www.w3.org/2000/svg"
+          className="drop-shadow-md"
+        >
+          <path d="M4 3L17 12L11 13.5L8 20L4 3Z" />
+        </svg>
+
         <motion.div
           style={{ backgroundColor: color }}
-          initial={{ scale: 0.5, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.5, opacity: 0 }}
-          className={
-            "px-2 py-2 bg-neutral-200 text-black font-bold whitespace-nowrap min-w-max text-xs rounded-full"
-          }
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="absolute left-4 top-4 rounded-full px-2 py-1 text-xs font-semibold text-white shadow"
         >
           {info?.name || info.email}
         </motion.div>
-      </svg>
+      </div>
     </motion.div>
   );
 };
