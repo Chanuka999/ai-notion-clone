@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { getDocumentTitle, updateDocumentTitle } from "@/actions/actions";
 import { useRouter } from "next/navigation";
+import Editor from "./Editor";
 
 const Document = ({ id }: { id: string }) => {
   const [input, setInput] = useState("");
@@ -96,7 +97,9 @@ const Document = ({ id }: { id: string }) => {
         {/*avatars */}
       </div>
 
+      <hr className="pb-10" />
       {/*collaborative editors */}
+      <Editor />
     </div>
   );
 };
