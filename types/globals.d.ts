@@ -1,5 +1,7 @@
 export {};
 
+declare module "*.css";
+
 declare global {
   namespace Clerk {
     interface CustomJwtSessionClaims {

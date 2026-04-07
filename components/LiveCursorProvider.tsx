@@ -1,22 +1,44 @@
 "use client";
 import { useMyPresence, useOthers } from "@liveblocks/react";
-import { useEffect, useCallback, type ReactNode } from "react";
+import { useEffect, useCallback, useRef, type ReactNode } from "react";
 import FollowPointer from "./FollowPointer";
 
 const LiveCursorProvider = ({ children }: { children: ReactNode }) => {
   const [, updateMyPresence] = useMyPresence();
   const others = useOthers();
+  const frameRef = useRef<number | null>(null);
+  const pendingCursorRef = useRef<{ x: number; y: number } | null>(null);
+
+  const flushCursorUpdate = useCallback(() => {
+    frameRef.current = null;
+    updateMyPresence({ cursor: pendingCursorRef.current });
+  }, [updateMyPresence]);
 
   const handlePointerMove = useCallback(
     (e: PointerEvent) => {
-      const cursor = { x: Math.floor(e.clientX), y: Math.floor(e.clientY) };
-      updateMyPresence({ cursor });
+      pendingCursorRef.current = {
+        x: Math.floor(e.clientX),
+        y: Math.floor(e.clientY),
+      };
+
+      if (frameRef.current === null) {
+        frameRef.current = window.requestAnimationFrame(flushCursorUpdate);
+      }
     },
-    [updateMyPresence],
+    [flushCursorUpdate],
   );
 
   const handlePointerLeave = useCallback(() => {
-    updateMyPresence({ cursor: null });
+    pendingCursorRef.current = null;
+
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+
+    window.requestAnimationFrame(() => {
+      updateMyPresence({ cursor: null });
+    });
   }, [updateMyPresence]);
 
   useEffect(() => {
@@ -26,6 +48,10 @@ const LiveCursorProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerleave", handlePointerLeave);
+
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
     };
   }, [handlePointerMove, handlePointerLeave]);
 
