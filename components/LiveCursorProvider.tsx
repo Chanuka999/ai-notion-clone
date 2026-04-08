@@ -1,10 +1,10 @@
 "use client";
-import { useMyPresence, useOthers } from "@liveblocks/react";
+import { useOthers, useUpdateMyPresence } from "@liveblocks/react";
 import { useEffect, useCallback, useRef, type ReactNode } from "react";
 import FollowPointer from "./FollowPointer";
 
 const LiveCursorProvider = ({ children }: { children: ReactNode }) => {
-  const [, updateMyPresence] = useMyPresence();
+  const updateMyPresence = useUpdateMyPresence();
   const others = useOthers();
   const frameRef = useRef<number | null>(null);
   const pendingCursorRef = useRef<{ x: number; y: number } | null>(null);
