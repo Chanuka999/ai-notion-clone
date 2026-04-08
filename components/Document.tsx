@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Editor from "./Editor";
 import useOwner from "@/lib/useOwner";
 import DeleteDocument from "./DeleteDocument";
+import InviteUser from "./InviteUser";
 
 const Document = ({ id }: { id: string }) => {
   const [input, setInput] = useState("");
@@ -86,21 +87,20 @@ const Document = ({ id }: { id: string }) => {
             {isUpdating ? "updating" : "update"}
           </Button>
 
-          {isOwner && <DeleteDocument id={id} />}
+          {isOwner && (
+            <>
+              <InviteUser />
+              <DeleteDocument id={id} />
+            </>
+          )}
         </form>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
+
+        <hr className="my-5" />
+        {/*collaborative editors */}
+        <Editor />
       </div>
-
-      <div>
-        {/*manageusers */}
-
-        {/*avatars */}
-      </div>
-
-      <hr className="pb-10" />
-      {/*collaborative editors */}
-      <Editor />
     </div>
   );
 };
