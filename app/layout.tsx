@@ -6,6 +6,7 @@ import "@blocknote/shadcn/style.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({
               {children}
             </div>
           </div>
+          <Toaster position="top-center" />
         </body>
       </html>
     </ClerkProvider>
