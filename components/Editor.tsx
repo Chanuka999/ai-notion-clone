@@ -1,6 +1,6 @@
 "use client";
 import { useRoom, useSelf } from "@liveblocks/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
 import { Button } from "./ui/button";
@@ -8,30 +8,37 @@ import { MoonIcon, SunIcon } from "lucide-react";
 import { BlockNoteView } from "@blocknote/shadcn";
 import { BlockNoteEditor } from "@blocknote/core";
 import { useCreateBlockNote } from "@blocknote/react";
+import type { Awareness } from "y-protocols/awareness";
 import stringToColor from "@/lib/stringToColor";
+
+type BlockNoteCollaborationProvider = {
+  awareness?: Awareness;
+};
 
 type EditorProps = {
   doc: Y.Doc;
-  provider: any;
+  provider: LiveblocksYjsProvider;
   darkMode: boolean;
 };
 
 const BlockNote = ({ doc, provider, darkMode }: EditorProps) => {
   const userInfo = useSelf((me) => me.info);
-
-  const editor: BlockNoteEditor = useCreateBlockNote({
-    collaboration: {
-      provider,
-
-      fragment: doc.getXmlFragment("document-store"),
-      user: {
-        name: userInfo?.name || userInfo?.email || "Guest",
-        color: stringToColor(userInfo?.email || userInfo?.name),
+  const editor: BlockNoteEditor = useCreateBlockNote(
+    {
+      collaboration: {
+        provider: provider as unknown as BlockNoteCollaborationProvider,
+        fragment: doc.getXmlFragment("document-store"),
+        user: {
+          name: userInfo?.name || userInfo?.email || "Guest",
+          color: stringToColor(userInfo?.email || userInfo?.name),
+        },
       },
     },
-  });
+    [doc, provider, userInfo?.email, userInfo?.name],
+  );
+
   return (
-    <div className="relative max-w-6xl mx-auto">
+    <div className="relative max-w-6xl mx-auto text-left" dir="ltr">
       <BlockNoteView
         className="min-h-screen"
         editor={editor}
@@ -43,25 +50,21 @@ const BlockNote = ({ doc, provider, darkMode }: EditorProps) => {
 
 const Editor = () => {
   const room = useRoom();
-  const [doc, setDoc] = useState<Y.Doc>();
-  const [provider, setProvider] = useState<LiveblocksYjsProvider>();
   const [darkMode, setDarkMode] = useState(false);
 
-  useEffect(() => {
+  const { doc, provider } = useMemo(() => {
     const yDoc = new Y.Doc();
     const yProvider = new LiveblocksYjsProvider(room, yDoc);
-    setDoc(yDoc);
-    setProvider(yProvider);
 
-    return () => {
-      yDoc?.destroy();
-      yProvider?.destroy();
-    };
+    return { doc: yDoc, provider: yProvider };
   }, [room]);
 
-  if (!doc || !provider) {
-    return null;
-  }
+  useEffect(() => {
+    return () => {
+      doc.destroy();
+      provider.destroy();
+    };
+  }, [doc, provider]);
 
   const style = `hover:text-white ${
     darkMode

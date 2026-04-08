@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { getDocumentTitle, updateDocumentTitle } from "@/actions/actions";
 import { useRouter } from "next/navigation";
 import Editor from "./Editor";
+import useOwner from "@/lib/useOwner";
+import DeleteDocument from "./DeleteDocument";
 
 const Document = ({ id }: { id: string }) => {
   const [input, setInput] = useState("");
@@ -12,6 +14,7 @@ const Document = ({ id }: { id: string }) => {
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, startTransition] = useTransition();
   const router = useRouter();
+  const isOwner = useOwner();
 
   useEffect(() => {
     let isMounted = true;
@@ -68,10 +71,9 @@ const Document = ({ id }: { id: string }) => {
   };
 
   return (
-    <div>
-      <div className="flex max-w-6xl mx-auto justify-between pb-5">
-        <form className="flex flex-1 space-x-2" onSubmit={updateTitle}>
-          {/*update title.. */}
+    <div className="flex h-full bg-white p-5">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 pb-5">
+        <form className="flex items-center gap-2" onSubmit={updateTitle}>
           <Input
             type="text"
             value={input}
@@ -84,11 +86,10 @@ const Document = ({ id }: { id: string }) => {
             {isUpdating ? "updating" : "update"}
           </Button>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          {/*if */}
-
-          {/*isover and inviteuser,delete document */}
+          {isOwner && <DeleteDocument id={id} />}
         </form>
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
 
       <div>
