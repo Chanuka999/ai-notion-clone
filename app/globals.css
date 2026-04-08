@@ -118,3 +118,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Keep editor content LTR so typing starts from the left edge. */
+.bn-container,
+.bn-editor,
+.bn-editor [contenteditable="true"],
+.bn-editor p {
+  direction: ltr;
+  text-align: left;
+}

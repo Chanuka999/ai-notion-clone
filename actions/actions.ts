@@ -112,6 +112,53 @@ export async function updateDocumentTitle(docId: string, title: string) {
   return { id: docId, title: nextTitle };
 }
 
+export async function deleteDocument(docId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await currentUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+
+  if (!userEmail) {
+    throw new Error("User email not found");
+  }
+
+  const roomSnapshot = await adminDb
+    .collectionGroup("rooms")
+    .where("roomId", "==", docId)
+    .where("userId", "==", userEmail)
+    .get();
+
+  const isOwner = roomSnapshot.docs.some((roomDoc) => {
+    const data = roomDoc.data() as { role?: RoomRole };
+    return data.role === "owner";
+  });
+
+  if (!isOwner) {
+    throw new Error("Forbidden");
+  }
+
+  const allRoomEntries = await adminDb
+    .collectionGroup("rooms")
+    .where("roomId", "==", docId)
+    .get();
+
+  const batch = adminDb.batch();
+
+  allRoomEntries.docs.forEach((roomDoc) => {
+    batch.delete(roomDoc.ref);
+  });
+
+  batch.delete(adminDb.collection("documents").doc(docId));
+
+  await batch.commit();
+
+  return { id: docId };
+}
+
 export async function getUserRooms(): Promise<UserRoom[]> {
   const { userId } = await auth();
 
