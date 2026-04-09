@@ -89,7 +89,7 @@ const Document = ({ id }: { id: string }) => {
 
           {isOwner && (
             <>
-              <InviteUser />
+              <InviteUser id={id} />
               <DeleteDocument id={id} />
             </>
           )}
