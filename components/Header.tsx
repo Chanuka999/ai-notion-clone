@@ -4,6 +4,7 @@ import {
   SignedIn,
   SignedOut,
   SignInButton,
+  SignOutButton,
   UserButton,
   useUser,
 } from "@clerk/nextjs";
@@ -23,11 +24,18 @@ const Header = () => {
 
       <div>
         <SignedOut>
-          <SignInButton />
+          <SignInButton mode="modal" />
         </SignedOut>
 
         <SignedIn>
-          <UserButton />
+          <div className="flex items-center gap-2">
+            <UserButton />
+            <SignOutButton>
+              <button className="text-sm underline underline-offset-2 cursor-pointer">
+                Switch account
+              </button>
+            </SignOutButton>
+          </div>
         </SignedIn>
       </div>
     </div>
