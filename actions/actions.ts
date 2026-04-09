@@ -226,3 +226,66 @@ export async function getUserRooms(): Promise<UserRoom[]> {
     })
     .filter((room): room is UserRoom => room !== null);
 }
+
+export async function inviteUserToDocument(roomId: string, email: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await currentUser();
+  const inviterEmail = user?.primaryEmailAddress?.emailAddress;
+
+  if (!inviterEmail) {
+    throw new Error("User email not found");
+  }
+
+  const invitedEmail = email.trim().toLowerCase();
+
+  if (!invitedEmail) {
+    throw new Error("Email is required");
+  }
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(invitedEmail);
+  if (!isEmailValid) {
+    throw new Error("Invalid email");
+  }
+
+  if (invitedEmail === inviterEmail.toLowerCase()) {
+    throw new Error("You cannot invite yourself");
+  }
+
+  const ownerRoomDoc = await adminDb
+    .collection("users")
+    .doc(inviterEmail)
+    .collection("rooms")
+    .doc(roomId)
+    .get();
+
+  if (!ownerRoomDoc.exists) {
+    throw new Error("Room not found");
+  }
+
+  const ownerRoomData = ownerRoomDoc.data() as { role?: RoomRole };
+  if (ownerRoomData.role !== "owner") {
+    throw new Error("Forbidden");
+  }
+
+  await adminDb
+    .collection("users")
+    .doc(invitedEmail)
+    .collection("rooms")
+    .doc(roomId)
+    .set(
+      {
+        userId: invitedEmail,
+        role: "editor",
+        createdAt: FieldValue.serverTimestamp(),
+        roomId,
+      },
+      { merge: true },
+    );
+
+  return { success: true };
+}
