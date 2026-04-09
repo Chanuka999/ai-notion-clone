@@ -117,24 +117,23 @@ const Sidebar = () => {
             ))}
           </>
         )}
+
+        {/*shared with me */}
+        {groupedData.editor.length > 0 && (
+          <>
+            <h2 className="text-gray-500 font-semibold text-sm">
+              Shared with me
+            </h2>
+            {groupedData.editor.map((doc) => (
+              <SidebarOption
+                key={doc.id}
+                href={`/doc/${doc.id}`}
+                title={doc.title}
+              />
+            ))}
+          </>
+        )}
       </div>
-
-      {/*shared with me */}
-      {groupedData.editor.length > 0 && (
-        <>
-          <h2 className="text-gray-500 font-semibold text-sm">
-            Shared with me
-          </h2>
-          {groupedData.editor.map((doc) => (
-            <SidebarOption
-              key={doc.id}
-              href={`/doc/${doc.id}`}
-              title={doc.title}
-            />
-          ))}
-        </>
-      )}
-
       {/*List */}
     </>
   );
