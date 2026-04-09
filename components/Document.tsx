@@ -8,6 +8,7 @@ import Editor from "./Editor";
 import useOwner from "@/lib/useOwner";
 import DeleteDocument from "./DeleteDocument";
 import InviteUser from "./InviteUser";
+import ManageUsers from "./ManageUsers";
 
 const Document = ({ id }: { id: string }) => {
   const [input, setInput] = useState("");
@@ -94,13 +95,15 @@ const Document = ({ id }: { id: string }) => {
             </>
           )}
         </form>
-
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
-        <hr className="my-5" />
-        {/*collaborative editors */}
-        <Editor />
       </div>
+
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      <div className="flex max-w-6xl mx-auto justify-between items-center mb-5">
+        <ManageUsers id={id} />
+      </div>
+      <hr className="my-5" />
+      {/*collaborative editors */}
+      <Editor />
     </div>
   );
 };
