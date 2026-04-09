@@ -1,30 +1,56 @@
 "use client";
-import React, { useState, useTransition } from "react";
+import React, { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { deleteDocument } from "@/actions/actions";
+import { inviteUserToDocument } from "@/actions/actions";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "./ui/input";
 
 const InviteUser = ({ id }: { id: string }) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const handleDelete = () => {
-    startTransition(async () => {
-      await deleteDocument(id);
 
-      window.dispatchEvent(new CustomEvent("documents:refresh"));
-      router.push("/");
-      router.refresh();
+  const handleInvite = async (e: FormEvent) => {
+    e.preventDefault();
+
+    const nextEmail = email.trim();
+    if (!nextEmail) {
+      setError("Email is required");
+      return;
+    }
+
+    setError(null);
+
+    startTransition(async () => {
+      try {
+        const result = await inviteUserToDocument(id, nextEmail);
+
+        if (!result.success) {
+          setError("Failed to send invite");
+          return;
+        }
+
+        setEmail("");
+        setIsOpen(false);
+        window.dispatchEvent(new CustomEvent("documents:refresh"));
+        router.refresh();
+      } catch (inviteError) {
+        const message =
+          inviteError instanceof Error
+            ? inviteError.message
+            : "Failed to send invite";
+        setError(message);
+      }
     });
   };
 
@@ -42,21 +68,19 @@ const InviteUser = ({ id }: { id: string }) => {
             Enter the mail o the user you want to invite
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="sm:justify-end gap-2">
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isPending}
-          >
-            {isPending ? "Deleting..." : "Delete"}
+        <form className="flex gap-2" onSubmit={handleInvite}>
+          <Input
+            type="email"
+            placeholder="Email"
+            className="w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Button type="submit" disabled={!email || isPending}>
+            {isPending ? "Inviting.." : "Invite"}
           </Button>
-        </DialogFooter>
+        </form>
+        {error && <p className="text-sm text-red-500">{error}</p>}
       </DialogContent>
     </Dialog>
   );
