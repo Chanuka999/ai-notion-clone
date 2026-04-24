@@ -9,6 +9,7 @@ import useOwner from "@/lib/useOwner";
 import DeleteDocument from "./DeleteDocument";
 import InviteUser from "./InviteUser";
 import ManageUsers from "./ManageUsers";
+import Avatars from "./Avatars";
 
 const Document = ({ id }: { id: string }) => {
   const [input, setInput] = useState("");
@@ -73,8 +74,8 @@ const Document = ({ id }: { id: string }) => {
   };
 
   return (
-    <div className="flex h-full bg-white p-5">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 pb-5">
+    <div className="flex flex-col h-full bg-white p-5">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 pb-5 w-full">
         <form className="flex items-center gap-2" onSubmit={updateTitle}>
           <Input
             type="text"
@@ -98,8 +99,11 @@ const Document = ({ id }: { id: string }) => {
       </div>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
-      <div className="flex max-w-6xl mx-auto justify-between items-center mb-5">
-        <ManageUsers id={id} />
+
+      {/* Users and Avatars section above editor */}
+      <div className="flex max-w-6xl mx-auto justify-start items-center mb-5 gap-4">
+        <ManageUsers id={id} buttonVariant="default" />
+        <Avatars />
       </div>
       <hr className="my-5" />
       {/*collaborative editors */}
