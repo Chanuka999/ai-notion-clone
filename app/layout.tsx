@@ -4,9 +4,11 @@ import "./globals.css";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/shadcn/style.css";
 import { ClerkProvider } from "@clerk/nextjs";
+
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,14 +36,16 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <Header />
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <div className="flex-1 p-4 bg-gray-200 overflow-y-auto scrollbar-hide">
-              {children}
+          <TooltipProvider>
+            <Header />
+            <div className="flex min-h-screen">
+              <Sidebar />
+              <div className="flex-1 p-4 bg-gray-200 overflow-y-auto scrollbar-hide">
+                {children}
+              </div>
             </div>
-          </div>
-          <Toaster position="top-center" />
+            <Toaster position="top-center" />
+          </TooltipProvider>
         </body>
       </html>
     </ClerkProvider>
